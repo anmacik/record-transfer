@@ -5,6 +5,7 @@ import express, { Express, Request, Response } from 'express';
 import https from 'https';
 import bodyParser from 'body-parser';
 import request from 'request';
+import axios from 'axios';
 
 import { GoogleDriveService } from './googleDriveService';
 const app: Express = express();
@@ -46,8 +47,26 @@ app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
 const dlFile = async (url:string, fileName) =>{
-  request
-  .get(url)
-  .on('error', err=>{console.log(err)})
-  .pipe(fs.createWriteStream('./public/'+fileName+'.mp3'))
+  const writer = fs.createWriteStream('./public/'+fileName+'.mp3');
+  return axios({
+    method: 'get',
+    url: url,
+    responseType: 'stream',
+  }).then(response =>{
+    return new Promise((resolve, reject)=>{
+      response.data.pipe(writer);
+      let error=null;
+      writer.on('error', err=>{
+        writer.close();
+        reject(err);
+        console.log(err)
+      });
+      writer.on('close',()=>{
+        if (!error){
+          resolve(true);
+        }
+      })
+    })
+  })
 }
+
