@@ -39,7 +39,7 @@ app.post('/', async (req: Request, res: Response) => {
     console.error(error);
   });
   fs.unlinkSync(finalPath);
-  res.send({url:'https://drive.google.com/file/d/'+respond.data.id});
+  res.send({url:'https://drive.google.com/uc?id='+respond.data.id+'&export=download'});
   })
 });
 
