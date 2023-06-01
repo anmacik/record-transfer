@@ -23,10 +23,12 @@ var count = 0;
 app.post('/', async (req: Request, res: Response) => {
   let flName=count;
   count++;
-  console.log('new file', req.body.url)
-  dlFile(req.body.url, flName).then(async ()=>{
+  console.log('new file', req.body.url)  
+
+  try{ dlFile(req.body.url, flName).then(async ()=>{
+      
   const finalPath = path.resolve(__dirname, '../public/'+flName+'.mp3');
-  const folderName = 'records';
+  const folderName = 'Sales Calls Recordings';
   let folder = await googleDriveService.searchFolder(folderName).catch((error) => {
     console.error(error);
     return null;
@@ -40,12 +42,23 @@ app.post('/', async (req: Request, res: Response) => {
   });
   fs.unlinkSync(finalPath);
   res.send({url:'https://drive.google.com/uc?id='+respond.data.id+'&export=download'});
+  
+
+  }).catch(err=>{
+    console.log('error with uploading file')
+    console.log(err)
   })
-});
+}
+catch (e) {
+  console.log('error with downloading file')
+  console.log(e)
+}
+})
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[server]: Server is running`);
 });
+
 const dlFile = async (url:string, fileName) =>{
   const writer = fs.createWriteStream('./public/'+fileName+'.mp3');
   return axios({
